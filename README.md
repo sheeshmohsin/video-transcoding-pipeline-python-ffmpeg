@@ -1,10 +1,10 @@
-# Video Transcoding Pipeline with Python and FFmpeg
+# Video Transmuxing Pipeline with Python and FFmpeg
 
-This repository provides a flexible and efficient **video transcoding pipeline** implemented in **Python** using **FFmpeg**. The pipeline supports multiple transcoding formats, including **Apple HLS**, **MPEG-DASH**, and **CMAF**, and allows for parallel processing with multi-core CPU utilization.
+This repository provides a flexible and efficient **video transmuxing pipeline** implemented in **Python** using **FFmpeg**. The pipeline supports multiple transmuxing formats, including **Apple HLS**, **MPEG-DASH**, and **CMAF**, and allows for parallel processing with multi-core CPU utilization.
 
 ## Features
 
-- **Multi-format Support**: Transcode video into Apple HLS, MPEG-DASH, and CMAF formats.
+- **Multi-format Support**: Transmux video into Apple HLS, MPEG-DASH, and CMAF formats.
 - **Parallel Processing**: Optimize CPU usage by using `(available CPU cores - 2)` to balance performance and system responsiveness.
 - **Flexible Pipeline**: Choose specific formats to generate or run all formats in parallel.
 - **Organized Output Structure**: Outputs are organized by input file name, with separate folders for each format.
@@ -14,15 +14,15 @@ This repository provides a flexible and efficient **video transcoding pipeline**
 The project is organized as follows:
 
 ```
-video-transcoding-pipeline-python-ffmpeg/
-├── transcoder.py                # Main script to handle transcoding pipeline
+video-transmuxing-pipeline-python-ffmpeg/
+├── transmuxer.py                # Main script to handle transmuxing pipeline
 ├── utils.py                     # Helper functions for FFmpeg commands and core handling
 ├── requirements.txt             # Python dependencies
 ├── README.md                    # Documentation
-└── output/                      # Directory for storing transcoded outputs
+└── output/                      # Directory for storing transmuxed outputs
 ```
 
-After running the transcoding pipeline, your output directory will be structured like this:
+After running the transmuxing pipeline, your output directory will be structured like this:
 
 ```
 output/
@@ -64,12 +64,12 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Running the Transcoding Pipeline
+### Running the Transmuxing Pipeline
 
 Run the following command, specifying the input file, output directory, and desired formats.
 
 ```bash
-python transcoder.py <input_file> <output_dir> --formats hls dash cmaf
+python transmuxer.py <input_file> <output_dir> --formats hls dash cmaf
 ```
 
 ### Examples
@@ -77,22 +77,22 @@ python transcoder.py <input_file> <output_dir> --formats hls dash cmaf
 1. **Generate All Formats**:
 
    ```bash
-   python transcoder.py input_video.mp4 output --formats hls dash cmaf
+   python transmuxer.py input_video.mp4 output --formats hls dash cmaf
    ```
 
 2. **Generate Specific Formats** (e.g., only HLS and MPEG-DASH):
 
    ```bash
-   python transcoder.py input_video.mp4 output --formats hls dash
+   python transmuxer.py input_video.mp4 output --formats hls dash
    ```
 
 3. **Default to All Formats** (if `--formats` is omitted):
 
    ```bash
-   python transcoder.py input_video.mp4 output
+   python transmuxer.py input_video.mp4 output
    ```
 
-## Playing the Transcoded Files
+## Playing the Transmuxed Files
 
 ### 1. Playing HLS Content
 
@@ -130,9 +130,9 @@ Or, use VLC or MP4Client to play directly from the `.mpd` manifest.
 
 ## Explanation of Key Components
 
-1. **`transcoder.py`**: The main script that manages the transcoding process. It uses `argparse` for flexible command-line arguments to specify the input file, output directory, and formats to generate.
+1. **`transmuxer.py`**: The main script that manages the transmuxing process. It uses `argparse` for flexible command-line arguments to specify the input file, output directory, and formats to generate.
 2. **`utils.py`**: Utility functions for managing FFmpeg commands, CPU core handling, and creating the output structure.
-3. **Parallel Processing**: The pipeline utilizes `(available CPU cores - 2)` for efficient transcoding without overwhelming the system.
+3. **Parallel Processing**: The pipeline utilizes `(available CPU cores - 2)` for efficient transmuxing without overwhelming the system.
 
 ## License
 
