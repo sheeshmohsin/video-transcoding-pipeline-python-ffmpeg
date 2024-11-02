@@ -3,7 +3,7 @@ import os
 import subprocess
 
 def available_cores():
-    """Get the number of cores available for transcoding, leaving 2 for system processes."""
+    """Get the number of cores available for transmuxing, leaving 2 for system processes."""
     total_cores = os.cpu_count()
     return max(1, total_cores - 2)  # Leave at least 1 core available
 
