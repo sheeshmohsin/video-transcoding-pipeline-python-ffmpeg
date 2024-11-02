@@ -1,11 +1,11 @@
-# transcoder.py
+# transmuxer.py
 import os
 import argparse
 import multiprocessing
 from utils import available_cores, ffmpeg_hls, ffmpeg_mpeg_dash, ffmpeg_cmaf
 
-def transcode_video(input_file, output_dir, formats):
-    """Transcode video based on chosen formats in parallel."""
+def transmux_video(input_file, output_dir, formats):
+    """Transmux video based on chosen formats in parallel."""
     # Get the base name of the input file (without extension)
     base_name = os.path.splitext(os.path.basename(input_file))[0]
     # Create a specific output directory named after the input file
@@ -27,13 +27,13 @@ def transcode_video(input_file, output_dir, formats):
 
         for task, result in zip(tasks, results):
             result.wait()
-            print(f"{task[0]} transcoding completed.")
+            print(f"{task[0]} transmuxing completed.")
 
 if __name__ == "__main__":
     # Argument parsing
-    parser = argparse.ArgumentParser(description="Video Transcoding Pipeline")
+    parser = argparse.ArgumentParser(description="Video Transmuxing Pipeline")
     parser.add_argument("input_file", type=str, help="Path to the input video file")
-    parser.add_argument("output_dir", type=str, help="Directory to save transcoded output files")
+    parser.add_argument("output_dir", type=str, help="Directory to save transmuxed output files")
     parser.add_argument(
         "--formats", 
         nargs="+", 
@@ -43,5 +43,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Run transcoding based on provided arguments
-    transcode_video(args.input_file, args.output_dir, args.formats)
+    # Run transmuxing based on provided arguments
+    transmux_video(args.input_file, args.output_dir, args.formats)
