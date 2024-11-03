@@ -2,7 +2,7 @@
 import os
 import argparse
 import multiprocessing
-from utils import available_cores, ffmpeg_hls, ffmpeg_mpeg_dash, ffmpeg_cmaf
+from utils import available_cores, ffmpeg_hls, ffmpeg_mpeg_dash, ffmpeg_cmaf, mp4box_cmaf
 
 def transmux_video(input_file, output_dir, formats):
     """Transmux video based on chosen formats in parallel."""
@@ -18,7 +18,7 @@ def transmux_video(input_file, output_dir, formats):
     if "dash" in formats:
         tasks.append(("MPEG-DASH", ffmpeg_mpeg_dash, input_file, specific_output_dir))
     if "cmaf" in formats:
-        tasks.append(("CMAF", ffmpeg_cmaf, input_file, specific_output_dir))
+        tasks.append(("CMAF", mp4box_cmaf, input_file, specific_output_dir))
 
     # Determine the number of cores to use for parallel processing
     cores = available_cores()
