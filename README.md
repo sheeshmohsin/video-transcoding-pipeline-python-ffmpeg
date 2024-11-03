@@ -1,44 +1,48 @@
-# Video Transmuxing Pipeline with Python and FFmpeg
+# Video Transcoding and Transmuxing Pipeline with Python and FFmpeg
 
-This repository provides a flexible and efficient **video transmuxing pipeline** implemented in **Python** using **FFmpeg**. The pipeline supports multiple transmuxing formats, including **Apple HLS**, **MPEG-DASH**, and **CMAF**, and allows for parallel processing with multi-core CPU utilization.
+A comprehensive video processing pipeline built with **Python** and **FFmpeg**, supporting both **transcoding** (changing codecs, resolution adjustments) and **transmuxing** (repackaging for adaptive streaming formats like Apple HLS, MPEG-DASH, and CMAF). This pipeline enables customizable transcoding settings, optimized CPU usage with parallel processing, and organized output structures for seamless streaming and playback.
 
 ## Features
 
-- **Multi-format Support**: Transmux video into Apple HLS, MPEG-DASH, and CMAF formats.
-- **Parallel Processing**: Optimize CPU usage by using `(available CPU cores - 2)` to balance performance and system responsiveness.
-- **Flexible Pipeline**: Choose specific formats to generate or run all formats in parallel.
-- **Organized Output Structure**: Outputs are organized by input file name, with separate folders for each format.
+- **Multi-format Transmuxing**: Repackage videos into Apple HLS, MPEG-DASH, and CMAF formats for adaptive streaming.
+- **Customizable Transcoding**: Convert between codecs, adjust resolution and bitrate, or change audio formats.
+- **Parallel Processing**: Utilize multi-core processing for efficiency, reserving system resources for other tasks.
+- **Organized Output**: Automatically structures output by input file and format, making it easy to manage transcoded and transmuxed files.
 
 ## Directory Structure
 
-The project is organized as follows:
-
 ```
-video-transmuxing-pipeline-python-ffmpeg/
-├── transmuxer.py                # Main script to handle transmuxing pipeline
-├── utils.py                     # Helper functions for FFmpeg commands and core handling
+video-transcoding-transmuxing-pipeline-python-ffmpeg/
+├── transcoder.py                # Main script to manage transcoding and transmuxing pipeline
+├── transcoder_utils.py          # Helper functions for specific transcoding examples
+├── utils.py                     # Transmuxing utility functions and helper commands
 ├── requirements.txt             # Python dependencies
-├── README.md                    # Documentation
-└── output/                      # Directory for storing transmuxed outputs
+├── README.md                    # Project documentation
+└── output/                      # Directory for storing processed outputs
 ```
 
-After running the transmuxing pipeline, your output directory will be structured like this:
+After processing, your output directory will look like this:
 
 ```
 output/
 └── input_filename/
-    ├── hls/
-    │   └── hls_output.m3u8 (and HLS segments)
-    ├── mpeg-dash/
-    │   └── dash_output.mpd (and DASH segments)
-    └── cmaf/
-        └── cmaf_output.mpd (and CMAF segments)
+    ├── hls/                      # HLS transmuxed output
+    │   └── hls_output.m3u8       # HLS playlist and segments
+    ├── mpeg-dash/                # MPEG-DASH transmuxed output
+    │   └── dash_output.mpd       # MPEG-DASH manifest and segments
+    ├── cmaf/                     # CMAF transmuxed output
+    │   └── cmaf_output.mpd       # CMAF manifest and segments
+    └── transcoded/               # Transcoded output
+        ├── 1080p.mp4             # Example transcoded file in 1080p
+        ├── 720p.mp4              # Example transcoded file in 720p
+        └── output_h265.mp4       # Example file transcoded to H.265
 ```
 
 ## Requirements
 
 1. **FFmpeg**: Ensure FFmpeg is installed on your system.
-2. **Python Libraries**: Install Python dependencies using `requirements.txt`.
+2. **MP4Box (for CMAF)**: Install GPAC if using CMAF with MP4Box.
+3. **Python Libraries**: Install dependencies from `requirements.txt`.
 
 ### Installing FFmpeg
 
@@ -54,7 +58,14 @@ output/
   ```
 
 - **Windows**:
-  Download FFmpeg from [FFmpeg's official website](https://ffmpeg.org/download.html) and add it to your system's PATH.
+  Download FFmpeg from [FFmpeg's official website](https://ffmpeg.org/download.html) and add it to your PATH.
+
+### Installing MP4Box (for CMAF)
+
+```bash
+brew install gpac  # macOS
+sudo apt install gpac  # Ubuntu
+```
 
 ### Installing Python Dependencies
 
@@ -64,75 +75,118 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Running the Transmuxing Pipeline
+### Running the Transcoding and Transmuxing Pipeline
 
-Run the following command, specifying the input file, output directory, and desired formats.
+The main script, `transcoder.py`, lets you specify the input file, output directory, and which formats to generate. You can choose from various transmuxing formats and transcoding options.
+
+#### Example Command
 
 ```bash
-python transmuxer.py <input_file> <output_dir> --formats hls dash cmaf
+python transcoder.py input_video.mp4 output --formats hls dash cmaf
 ```
 
-### Examples
+This command generates **HLS**, **DASH**, and **CMAF** outputs in the specified output directory.
 
-1. **Generate All Formats**:
+## Transmuxing Use Cases
 
-   ```bash
-   python transmuxer.py input_video.mp4 output --formats hls dash cmaf
-   ```
+### 1. Apple HLS
 
-2. **Generate Specific Formats** (e.g., only HLS and MPEG-DASH):
+To transmux a video into the **HLS** format:
 
-   ```bash
-   python transmuxer.py input_video.mp4 output --formats hls dash
-   ```
+```bash
+ffmpeg -i input_video.mp4 -c copy -f hls output/hls/hls_output.m3u8
+```
 
-3. **Default to All Formats** (if `--formats` is omitted):
+### 2. MPEG-DASH
 
-   ```bash
-   python transmuxer.py input_video.mp4 output
-   ```
+To transmux a video into the **MPEG-DASH** format:
+
+```bash
+ffmpeg -i input_video.mp4 -c copy -f dash output/mpeg-dash/dash_output.mpd
+```
+
+### 3. CMAF (using MP4Box)
+
+To create **CMAF** segments with MP4Box, use:
+
+```bash
+MP4Box -dash 4000 -frag 4000 -rap -profile dashavc264:live -bs-switching no -single-file -out output/cmaf/cmaf_output.mpd input_video.mp4
+```
+
+## Transcoding Use Cases
+
+### 1. Codec Conversion: H.264 to H.265
+
+Convert a video from **H.264** to **H.265** for improved compression efficiency:
+
+```python
+from transcoder_utils import transcode_to_h265
+transcode_to_h265("input_video.mp4", "output_h265.mp4")
+```
+
+### 2. Resolution and Bitrate Adjustment for Adaptive Streaming
+
+Generate multiple resolutions for adaptive streaming (1080p, 720p, 480p):
+
+```python
+from transcoder_utils import transcode_to_multiple_resolutions
+transcode_to_multiple_resolutions("input_video.mp4", "output_directory")
+```
+
+### 3. Audio Format Conversion: AAC to MP3
+
+Convert audio from **AAC** to **MP3** for compatibility with different audio players:
+
+```python
+from transcoder_utils import transcode_audio_to_mp3
+transcode_audio_to_mp3("input_video.mp4", "output_audio.mp3")
+```
+
+## Transcoding Functions in `transcoder_utils.py`
+
+Here’s a breakdown of the specific transcoding functions available:
+
+1. **`transcode_to_h265`**:
+   - Converts a video to H.265 (HEVC) format.
+   - Reduces file size with minimal quality loss.
+
+2. **`transcode_to_multiple_resolutions`**:
+   - Generates multiple video resolutions for adaptive streaming.
+   - Useful for platforms that require multiple quality options.
+
+3. **`transcode_audio_to_mp3`**:
+   - Converts audio to MP3 format.
+   - Ideal for compatibility with older audio devices and players.
 
 ## Playing the Transmuxed Files
 
-### 1. Playing HLS Content
+### HLS Content
 
-To play the HLS output, use the `.m3u8` playlist with FFplay:
-
-```bash
-ffplay output/input_video/hls/hls_output.m3u8
-```
-
-### 2. Playing MPEG-DASH Content
-
-Since FFplay doesn’t directly support `.mpd`, use FFmpeg to repackage the MPEG-DASH `.mpd` file into a compatible format and pipe it to FFplay:
+To play HLS content:
 
 ```bash
-ffmpeg -i output/input_video/mpeg-dash/dash_output.mpd -c copy -f matroska - | ffplay -
+ffplay output/hls/hls_output.m3u8
 ```
 
-Alternatively, use VLC or MP4Client:
+### MPEG-DASH Content
 
-- **VLC**: Open `dash_output.mpd` in VLC via **Media > Open Network Stream**.
-- **MP4Client** (from GPAC): Install GPAC and run:
-  ```bash
-  MP4Client output/input_video/mpeg-dash/dash_output.mpd
-  ```
-
-### 3. Playing CMAF Content
-
-CMAF playback is similar to MPEG-DASH. Use FFmpeg to repackage the `.mpd` file for FFplay:
+Play MPEG-DASH content by repackaging with FFmpeg:
 
 ```bash
-ffmpeg -i output/input_video/cmaf/cmaf_output.mpd -c copy -f matroska - | ffplay -
+ffmpeg -i output/mpeg-dash/dash_output.mpd -c copy -f matroska - | ffplay -
 ```
 
-Or, use VLC or MP4Client to play directly from the `.mpd` manifest.
+Or use **VLC** or **MP4Client** (from GPAC).
 
-## Explanation of Key Components
+### CMAF Content
 
-1. **`transmuxer.py`**: The main script that manages the transmuxing process. It uses `argparse` for flexible command-line arguments to specify the input file, output directory, and formats to generate.
-2. **`utils.py`**: Utility functions for managing FFmpeg commands, CPU core handling, and creating the output structure.
-3. **Parallel Processing**: The pipeline utilizes `(available CPU cores - 2)` for efficient transmuxing without overwhelming the system.
+For CMAF, use:
+
+```bash
+ffmpeg -i output/cmaf/cmaf_output.mpd -c copy -f matroska - | ffplay -
+```
+
+Or play directly with **VLC** or **MP4Client**.
 
 ## License
 
